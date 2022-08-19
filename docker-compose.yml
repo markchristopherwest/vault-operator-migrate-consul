@@ -1,0 +1,39 @@
+version: '2.1'
+services:
+
+  consul:
+    image: consul:latest
+    container_name: consul
+    command: >-
+      agent
+      -bind=0.0.0.0
+      -config-file=/consul.json
+    volumes:
+      - ./config/consul.json:/consul.json
+      - ./backend/consul:/backend/consul:rw
+    ports:
+      - "9300:9300"
+      - "9500:9500"
+      - "9600:9600/udp"
+  
+  vault:
+    image: vault:latest
+    container_name: vault
+    entrypoint: vault server -config /vault.json
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./config/vault.json:/vault.json
+      - ./config/migrate.hcl:/migrate.hcl
+      - ./config/migrate.sh:/migrate.sh
+      - ./backend:/backend:rw
+    environment:
+      MAX_HEAP: "4096m"
+      VAULT_ADVERTISE_ADDR: "http://0.0.0.0:8200"
+      VAULT_CLUSTER_ADDR: "http://0.0.0.0:8201"
+      CONSUL_HTTP_ADDR: "host.docker.internal:9500"
+      VAULT_ADDR: "http://127.0.0.1:8200"
+    ports:
+      - "9200:8200"
+    depends_on:
+      - consul
