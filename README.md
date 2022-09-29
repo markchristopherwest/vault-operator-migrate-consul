@@ -11,13 +11,15 @@ Execute the migrate.sh from inside Vault to test vault operator migrate within a
 
 docker-compose up
 
-docker exec -it vault sh
-
-./migrate.sh
+docker exec -it vault sh ./migrate.sh
 
 exit
 
 docker-compose down
+
+docker system prune -f
+docker volume prune -f
+
 
 ```
 
